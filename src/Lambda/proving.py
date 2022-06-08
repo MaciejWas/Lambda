@@ -34,7 +34,10 @@ def alpha_reduction_inplace(term: LambdaTerm, replace: Variable, target: Variabl
 
 
 def alpha_reduction(
-    term: LambdaTerm, replace: Variable, target: Variable, not_free_vars: list[Variable] = []
+    term: LambdaTerm,
+    replace: Variable,
+    target: Variable,
+    not_free_vars: list[Variable] = [],
 ) -> LambdaTerm:
     match term:
         case Variable(name):
@@ -48,14 +51,33 @@ def alpha_reduction(
             )
         case Abstraction(bound_var, expr):
             return Abstraction(
-                bound_var, alpha_reduction(expr, replace, target, not_free_vars + [bound_var])
+                bound_var,
+                alpha_reduction(expr, replace, target, not_free_vars + [bound_var]),
             )
-        case _:
-            raise Exception("GUNWO KURWA MAC")
 
-    term = deepcopy(term)
-    alpha_reduction_inplace(term, replace, target)
-    return term
+
+def alpha_equiv(
+    term1: LambdaTerm, term2: LambdaTerm, not_free_vars: list[Variable] = []
+) -> bool:
+    if type(term1) != type(term2):
+        return False
+
+    match term1:
+        case Variable(name):
+            return isinstance(term2, Variable)
+        case Application(of, on):
+            if isinstance(term2, Application):
+                return alpha_equiv(of, term2.of, not_free_vars) and alpha_equiv(
+                    on, term2.on, not_free_vars
+                )
+            return False
+        case Abstraction(bound_var, expr):
+            if isinstance(term2, Abstraction):
+                expr2 = alpha_reduction(
+                    term2.expression, term2.bound_variable, bound_var
+                )
+                return alpha_equiv(expr, expr2, not_free_vars + [bound_var])
+            return False
 
 
 def find_subterms(term: LambdaTerm) -> Iterable[LambdaTerm]:
@@ -66,8 +88,6 @@ def find_subterms(term: LambdaTerm) -> Iterable[LambdaTerm]:
             return chain([term], find_subterms(of), find_subterms(on))
         case Abstraction(bound_var, expr):
             return chain([bound_var], find_subterms(expr))
-        case _:
-            raise Exception("GUNWO KURWA MAC")
 
 
 def find_free_variables(term: LambdaTerm) -> Iterable[Variable]:
@@ -78,8 +98,6 @@ def find_free_variables(term: LambdaTerm) -> Iterable[Variable]:
             return chain(find_free_variables(of), find_free_variables(on))
         case Abstraction(bound_var, expr):
             return filter(lambda var: var != bound_var, find_free_variables(expr))
-        case _:
-            raise Exception("GUNWO KURWA MAC")
 
 
 x = Abstraction(Variable("XD"), Application(Variable("XD"), Variable(":o")))
