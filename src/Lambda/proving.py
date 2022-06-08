@@ -9,12 +9,10 @@ from copy import deepcopy
 class Variable:
     name: str
 
-
 @dataclass
 class Abstraction:
     bound_variable: Variable
     expression: "LambdaTerm"
-
 
 @dataclass
 class Application:
@@ -26,33 +24,33 @@ ConstructionPrinciple = Union[Abstraction, Application]
 LambdaTerm = Union[Variable, Abstraction, Application]
 
 
-def alpha_reduction_inplace(term: LambdaTerm, replace: Variable, target: Variable):
+def alpha_conversion_inplace(term: LambdaTerm, replace: Variable, target: Variable):
     free_vars = find_free_variables(term)
     for var in free_vars:
         if var.name == replace.name:
             var.name = target.name
 
 
-def alpha_reduction(
+def alpha_conversion(
     term: LambdaTerm,
-    replace: Variable,
-    target: Variable,
+    old: Variable,
+    new: Variable,
     not_free_vars: list[Variable] = [],
 ) -> LambdaTerm:
     match term:
         case Variable(name):
-            if term == target:
-                return replace
+            if name == old.name:
+                return new
             return term
         case Application(of, on):
             return Application(
-                alpha_reduction(of, replace, target, not_free_vars),
-                alpha_reduction(on, replace, target, not_free_vars),
+                alpha_conversion(of, old, new, not_free_vars),
+                alpha_conversion(on, old, new, not_free_vars),
             )
         case Abstraction(bound_var, expr):
             return Abstraction(
                 bound_var,
-                alpha_reduction(expr, replace, target, not_free_vars + [bound_var]),
+                alpha_conversion(expr, old, new, not_free_vars + [bound_var]),
             )
 
 
@@ -73,7 +71,7 @@ def alpha_equiv(
             return False
         case Abstraction(bound_var, expr):
             if isinstance(term2, Abstraction):
-                expr2 = alpha_reduction(
+                expr2 = alpha_conversion(
                     term2.expression, term2.bound_variable, bound_var
                 )
                 return alpha_equiv(expr, expr2, not_free_vars + [bound_var])
@@ -100,7 +98,36 @@ def find_free_variables(term: LambdaTerm) -> Iterable[Variable]:
             return filter(lambda var: var != bound_var, find_free_variables(expr))
 
 
-x = Abstraction(Variable("XD"), Application(Variable("XD"), Variable(":o")))
+def substitution(term: LambdaTerm, var: Variable, target: LambdaTerm) -> LambdaTerm:
+    match term:
+        case Variable(name):
+            return target if name == var.name else term
+        case Application(of, on):
+            return Application(
+                substitution(of, var, target),
+                substitution(on, var, target)
+            )
+        case Abstraction(bound_var, expr):
+            if bound_var.name == var.name:
+                new_bound_var = Variable(bound_var.name + "'")
+                new_expr = alpha_conversion(expr, bound_var, new_bound_var)
+                return substitution(Abstraction(new_bound_var, new_expr), var, target)
 
-print(alpha_reduction(x, Variable(":o"), Variable(":P")))
-print(alpha_reduction(x, Variable("XD"), Variable(":P")))
+            return Abstraction(
+                bound_var,
+                substitution(expr, var, target)
+            )
+
+
+
+x = Abstraction(Variable("XD"), Application(Variable("XD"), Variable(":o")))
+y = Abstraction(Variable("XDD"), Application(Variable("XDD"), Variable(":p")))
+
+print(alpha_conversion(x, Variable(":o"), Variable(":P")))
+print(alpha_conversion(x, Variable("XD"), Variable(":P")))
+print(alpha_equiv(x, y))
+print(substitution(x, Variable("XD"), Variable("SUBSFSDFASD")))
+print(substitution(x, Variable(":o"), Variable("SUBSFSDFASD")))
+
+
+
