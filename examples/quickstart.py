@@ -1,5 +1,5 @@
 """
-This example script imports the Lambda package and
+This example script imports the lambda package and
 prints out the version.
 """
 
@@ -8,7 +8,7 @@ import Lambda
 
 def main():
     print(
-        f"Lambda version: {Lambda.__version__}"
+        f"lambda version: {Lambda.__version__}"
     )
 
 
