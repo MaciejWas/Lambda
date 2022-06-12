@@ -1,5 +1,5 @@
-from conversions.alpha import alpha_conversion
-from data.definitions import Application, Variable, LambdaTerm, Abstraction
+from untyped.conversions.alpha import alpha_conversion
+from untyped.data.definitions import Application, Variable, LambdaTerm, Abstraction
 
 def alpha_equiv(
     term1: LambdaTerm, term2: LambdaTerm, not_free_vars: list[Variable] = []

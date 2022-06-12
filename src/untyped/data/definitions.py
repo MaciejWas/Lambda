@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from itertools import chain
-from typing import Union, Iterable, Any
+from typing import Union, Iterable, Any, Callable
 
 
 @dataclass
@@ -25,6 +25,12 @@ class Abstraction:
 class Application:
     of: "LambdaTerm"
     on: "LambdaTerm"
+
+    def map(self, f: Callable[["LambdaTerm"], "LambdaTerm"]) -> "Application":
+        return Application(
+            f(self.of),
+            f(self.on)
+        )
 
 
 ConstructionPrinciple = Union[Abstraction, Application]

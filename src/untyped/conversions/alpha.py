@@ -1,6 +1,6 @@
 from typing import Optional
 
-from data.definitions import LambdaTerm, find_free_variables, Variable, Application, Abstraction
+from untyped.data.definitions import LambdaTerm, find_free_variables, Variable, Application, Abstraction
 
 
 def alpha_conversion_inplace(term: LambdaTerm, replace: Variable, target: Variable):

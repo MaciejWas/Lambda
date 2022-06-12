@@ -1,5 +1,5 @@
-from conversions import substitution
-from data import Variable, Application, Abstraction, find_free_variables
+from untyped.conversions import substitution
+from untyped.data import Variable, Application, Abstraction, find_free_variables
 
 
 def test_create():
