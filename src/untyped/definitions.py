@@ -34,10 +34,7 @@ class Application:
     on: "LambdaTerm"
 
     def map(self, f: Callable[["LambdaTerm"], "LambdaTerm"]) -> "Application":
-        return Application(
-            f(self.of),
-            f(self.on)
-        )
+        return Application(f(self.of), f(self.on))
 
 
 ConstructionPrinciple = Union[Abstraction, Application]

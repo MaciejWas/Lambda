@@ -7,9 +7,7 @@ import untyped
 
 
 def main():
-    print(
-        f"lambda version: {untyped.__version__}"
-    )
+    print(f"lambda version: {untyped.__version__}")
 
 
 if __name__ == "__main__":

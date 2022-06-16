@@ -19,23 +19,11 @@ def make_variables(text: str) -> List[Variable]:
 def test_create():
     a, b, c, d = make_variables("a b c d")
 
-    ab = Application(
-        of=a,
-        on=b
-    )
-    cab = Application(
-        of=c,
-        on=ab
-    )
-    cab = Application(
-        of=cab,
-        on=d
-    )
+    ab = Application(of=a, on=b)
+    cab = Application(of=c, on=ab)
+    cab = Application(of=cab, on=d)
 
-    Abstraction(
-        bound_variable=d,
-        expression=cab
-    )
+    Abstraction(bound_variable=d, expression=cab)
 
 
 def test_free_variables_0():
@@ -51,14 +39,8 @@ def test_free_variables_0():
 
 def test_free_variables_1():
     a, b, c, d = make_variables("a b c d")
-    ab = Application(
-        of=a,
-        on=b
-    )
-    c_ab = Abstraction(
-        bound_variable=c,
-        expression=ab
-    )
+    ab = Application(of=a, on=b)
+    c_ab = Abstraction(bound_variable=c, expression=ab)
 
     free_vars = find_free_variables(c_ab)
     assert_eq_iterable(free_vars, [a, b])
@@ -66,19 +48,10 @@ def test_free_variables_1():
 
 def test_free_variables_2():
     a, b, c, d = make_variables("a b c d")
-    ab = Application(
-        of=a,
-        on=b
-    )
-    cab = Application(
-        of=c,
-        on=ab
-    )
+    ab = Application(of=a, on=b)
+    cab = Application(of=c, on=ab)
 
-    d_cab = Abstraction(
-        bound_variable=d,
-        expression=cab
-    )
+    d_cab = Abstraction(bound_variable=d, expression=cab)
 
     free_vars = find_free_variables(d_cab)
     assert_eq_iterable(free_vars, [c, a, b])
@@ -88,10 +61,7 @@ def test_free_variables_3():
     a, b, c, d = make_variables("a b c d")
     a_a = Abstraction(a, a)
     b_b = Abstraction(b, b)
-    a_ab_b = Application(
-        of=a_a,
-        on=b_b
-    )
+    a_ab_b = Application(of=a_a, on=b_b)
 
     free_vars = find_free_variables(a_ab_b)
     assert_eq_iterable(free_vars, [])
@@ -101,18 +71,25 @@ def test_free_variables_3():
     assert_eq_iterable(free_vars, [d])
 
 
-def test_substitution():
-    var1 = Variable(name="var1")
-    var2 = Variable(name="var2")
-    var3 = Variable(name="var3")
-    appl = Application(
-        of=var1,
-        on=var2
-    )
-    abstr = Abstraction(
-        bound_variable=var3,
-        expression=appl
-    )
+def test_basic_substitution():
+    a, b, c = make_variables("a b c")
 
-    abstr2 = substitution(abstr, var1, Variable("substituted"))
-    assert isinstance(abstr2, Abstraction)
+    a__substituted = substitution(a, a, b)
+    assert isinstance(a__substituted, Variable)
+    assert a__substituted == b
+
+    ab = Application(a, b)
+    ab__substituted = substitution(ab, b, c)
+    assert isinstance(ab__substituted, Application)
+    assert ab__substituted.of == a
+    assert ab__substituted.on == c
+
+    a_b = Abstraction(a, b)
+    a_b__substituted = substitution(a_b, a, c)
+    assert isinstance(a_b__substituted, Abstraction)
+    assert isinstance(a_b__substituted.expression, Variable)
+    assert a_b__substituted.bound_variable == a
+    assert a_b__substituted.on == c
+
+
+
