@@ -84,12 +84,48 @@ def test_basic_substitution():
     assert ab__substituted.of == a
     assert ab__substituted.on == c
 
+
+def test_name_shadowing_substitution():
+    a, b, c = make_variables("a b c")
+    ab = Application(a, b)
+    a_ab = Abstraction(a, ab)
+    aa = Application(a, a)
+
+    # Substitution should modify bounded variable in lambda abstraction if it is the substituted variable
+    # E.g. (\a -> ab)[b := aa] becomes (\a' -> a'aa)
+    a_ab__substituted = substitution(a_ab, b, aa)
+    assert isinstance(a_ab__substituted, Abstraction)
+    assert isinstance(a_ab__substituted.expression, Application)
+    assert a_ab__substituted.bound_variable == Variable("a'")
+    assert False
+
     a_b = Abstraction(a, b)
     a_b__substituted = substitution(a_b, a, c)
     assert isinstance(a_b__substituted, Abstraction)
     assert isinstance(a_b__substituted.expression, Variable)
-    assert a_b__substituted.bound_variable == a
-    assert a_b__substituted.on == c
+    assert a_b__substituted.bound_variable == Variable("a'")
+    assert a_b__substituted.expression == b
+
+
+def test_substitution():
+    a, b, c = make_variables("a b c")
+
+    a__substituted = substitution(a, a, b)
+    assert isinstance(a__substituted, Variable)
+    assert a__substituted == b
+
+    ab = Application(a, b)
+    ab__substituted = substitution(ab, b, c)
+    assert isinstance(ab__substituted, Application)
+    assert ab__substituted.of == a
+    assert ab__substituted.on == c
+
+    a_b = Abstraction(a, b)
+    a_b__substituted = substitution(a_b, a, c)
+    assert isinstance(a_b__substituted, Abstraction)
+    assert isinstance(a_b__substituted.expression, Variable)
+    assert a_b__substituted.bound_variable == Variable("a'")
+    assert a_b__substituted.expression == b
 
 
 
